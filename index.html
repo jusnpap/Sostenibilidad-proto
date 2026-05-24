@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FixHero | Mantenimiento Inteligente</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Outfit', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: '#f9fafb',
+                        'on-primary': '#2e1065',
+                        'accent-purple': '#7c3aed',
+                        'accent-purple-light': '#ede9fe',
+                        'accent-orange': '#f97316',
+                        'accent-orange-light': '#ffedd5',
+                        'card-bg': '#ffffff',
+                        'card-border': '#e5e7eb',
+                    },
+                    boxShadow: {
+                        'premium': '0 10px 40px -10px rgba(124, 58, 237, 0.1)',
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <!-- Google Identity Services -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body class="bg-primary text-on-primary font-sans antialiased overflow-x-hidden min-h-screen flex flex-col">
+
+    <!-- Ambient Glow Background -->
+    <div class="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+        <div class="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-accent-purple rounded-full blur-[120px] opacity-20 glow-anim"></div>
+        <div class="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-accent-orange rounded-full blur-[100px] opacity-10 glow-anim-delayed"></div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="relative z-10 w-full max-w-6xl mx-auto px-6 py-6 flex justify-between items-center">
+        <div class="font-display font-bold text-2xl flex items-center gap-2">
+            <svg class="w-8 h-8 text-accent-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+            FixHero
+        </div>
+        <div class="hidden md:flex space-x-1 bg-white p-1 rounded-full shadow-sm border border-card-border">
+            <button class="nav-btn active px-6 py-2 rounded-full font-medium text-sm transition-colors duration-300" data-target="home">Inicio</button>
+            <button class="nav-btn px-6 py-2 rounded-full font-medium text-sm transition-colors duration-300" data-target="subscriptions">Suscripciones</button>
+            <button class="nav-btn px-6 py-2 rounded-full font-medium text-sm transition-colors duration-300" data-target="ondemand">Pide un Técnico</button>
+            <button class="nav-btn px-6 py-2 rounded-full font-medium text-sm transition-colors duration-300" data-target="blog">Academia DIY</button>
+        </div>
+        <div class="flex gap-4 items-center">
+            <!-- Botón Admin Oculto por Defecto -->
+            <button id="nav-admin-btn" class="hidden nav-btn text-accent-purple font-bold text-sm px-4 py-2 bg-purple-100 hover:bg-purple-200 rounded-full transition-colors duration-300" data-target="admin">Panel Admin</button>
+            
+            <!-- Contenedor Google Sign-In -->
+            <div id="google-btn-container"></div>
+            
+            <!-- Contenedor Perfil Usuario Logueado (Oculto al inicio) -->
+            <div id="user-profile-container" class="hidden flex items-center gap-2 bg-white px-4 py-2 rounded-full border border-card-border shadow-sm">
+                <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                <span id="user-name-display" class="font-bold text-on-primary text-sm"></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="relative z-10 flex-grow w-full max-w-6xl mx-auto px-6 py-12">
+        
+        <!-- SECTION: HOME -->
+        <section id="home" class="tab-content block">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center min-h-[60vh]">
+                <div class="hero-text">
+                    <h1 class="font-display text-5xl md:text-6xl font-extrabold leading-tight mb-6">Cuidamos de tu casa para que <span class="text-accent-purple">tú no sufras.</span></h1>
+                    <p class="text-lg text-gray-600 mb-8 max-w-lg">Suscripciones de mantenimiento preventivo y reparaciones a demanda por expertos verificados. Todo en una sola plataforma.</p>
+                    
+                    <div class="relative max-w-md">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        </div>
+                        <input type="text" class="block w-full pl-10 pr-4 py-4 rounded-2xl border border-gray-200 shadow-sm focus:ring-2 focus:ring-accent-purple focus:border-transparent outline-none transition-all" placeholder="¿Qué necesitas reparar hoy? (Ej. grifo gotea)">
+                        <button class="absolute inset-y-2 right-2 bg-accent-purple text-white px-6 rounded-xl font-medium hover:bg-purple-700 transition-colors">Buscar</button>
+                    </div>
+
+                    <div class="mt-10 flex items-center gap-4 text-sm font-medium text-gray-500">
+                        <div class="flex -space-x-2">
+                            <img class="w-8 h-8 rounded-full border-2 border-white" src="https://i.pravatar.cc/100?img=1" alt="User">
+                            <img class="w-8 h-8 rounded-full border-2 border-white" src="https://i.pravatar.cc/100?img=2" alt="User">
+                            <img class="w-8 h-8 rounded-full border-2 border-white" src="https://i.pravatar.cc/100?img=3" alt="User">
+                        </div>
+                        <p>+2,000 hogares protegidos</p>
+                    </div>
+                </div>
+                <div class="hero-image relative">
+                    <div class="aspect-square bg-gradient-to-tr from-accent-purple-light to-white rounded-3xl border border-card-border shadow-premium overflow-hidden relative flex items-center justify-center">
+                        <img src="https://images.unsplash.com/photo-1581578731548-c64695cc6952?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Home Repair" class="object-cover w-full h-full opacity-90">
+                        <div class="absolute bottom-6 left-6 right-6 bg-white/90 backdrop-blur-md p-4 rounded-2xl border border-white/50 shadow-lg flex items-center gap-4">
+                            <div class="bg-green-100 p-2 rounded-full text-green-600">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            </div>
+                            <div>
+                                <h4 class="font-display font-bold text-on-primary">Reparación Exitosa</h4>
+                                <p class="text-sm text-gray-500">Tubería arreglada en 45 mins</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION: SUBSCRIPTIONS -->
+        <section id="subscriptions" class="tab-content hidden">
+            <div class="text-center mb-16">
+                <h2 class="font-display text-4xl font-extrabold mb-4">Planes de Mantenimiento Preventivo</h2>
+                <p class="text-lg text-gray-600 max-w-2xl mx-auto">Evita desastres costosos. Una cuota mensual y nosotros nos encargamos de que tu hogar funcione a la perfección.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                <div class="bg-card-bg rounded-3xl p-8 border border-card-border shadow-sm hover:shadow-premium transition-shadow duration-300 relative overflow-hidden group">
+                    <h3 class="font-display text-2xl font-bold mb-2">Plan Básico</h3>
+                    <div class="flex items-baseline gap-1 mb-6">
+                        <span class="text-4xl font-extrabold tabular-nums">$60</span>
+                        <span class="text-gray-500">/mes</span>
+                    </div>
+                    <p class="text-gray-600 mb-8 h-12">Ideal para departamentos y hogares pequeños que necesitan tranquilidad.</p>
+                    <ul class="space-y-4 mb-8">
+                        <li class="flex items-start gap-3">
+                            <svg class="w-5 h-5 text-accent-purple mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            <span><strong class="font-semibold">2 visitas preventivas</strong> al año</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <svg class="w-5 h-5 text-accent-purple mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            <span><strong class="font-semibold">2 micro-reparaciones</strong> al mes (max 1h)</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <svg class="w-5 h-5 text-accent-purple mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            <span>Purgar radiadores, grifos, cuadros</span>
+                        </li>
+                    </ul>
+                    <button class="w-full py-4 rounded-xl font-semibold bg-accent-purple-light text-accent-purple group-hover:bg-accent-purple group-hover:text-white transition-colors duration-300 btn-subscribe" data-plan="Básico">Suscribirse al Básico</button>
+                </div>
+
+                <div class="bg-on-primary text-white rounded-3xl p-8 border border-on-primary shadow-premium relative overflow-hidden">
+                    <div class="absolute top-0 right-0 bg-accent-orange text-white text-xs font-bold px-4 py-1 rounded-bl-xl">POPULAR</div>
+                    <h3 class="font-display text-2xl font-bold mb-2">Plan Familiar</h3>
+                    <div class="flex items-baseline gap-1 mb-6">
+                        <span class="text-4xl font-extrabold tabular-nums">$120</span>
+                        <span class="text-gray-400">/mes</span>
+                    </div>
+                    <p class="text-gray-300 mb-8 h-12">Cobertura total para casas grandes y familias que no quieren preocuparse por nada.</p>
+                    <ul class="space-y-4 mb-8">
+                        <li class="flex items-start gap-3">
+                            <svg class="w-5 h-5 text-accent-orange mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            <span><strong class="font-semibold">4 visitas preventivas</strong> al año</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <svg class="w-5 h-5 text-accent-orange mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            <span><strong class="font-semibold">Micro-reparaciones ilimitadas</strong> (max 1h c/u)</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <svg class="w-5 h-5 text-accent-orange mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            <span>Tarifas congeladas en mano de obra extra</span>
+                        </li>
+                    </ul>
+                    <button class="w-full py-4 rounded-xl font-semibold bg-accent-orange text-white hover:bg-orange-600 transition-colors duration-300 shadow-lg shadow-orange-500/30 btn-subscribe" data-plan="Familiar">Suscribirse al Familiar</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION: ON-DEMAND (PIDE UN TÉCNICO) -->
+        <section id="ondemand" class="tab-content hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                <div>
+                    <h2 class="font-display text-4xl font-extrabold mb-4">Servicio Express</h2>
+                    <p class="text-lg text-gray-600 mb-8">Selecciona la micro-tarea que necesitas resolver y agenda a un experto verificado al instante.</p>
+                    
+                    <div class="space-y-4 mb-8" id="service-options">
+                        <label class="flex items-center justify-between p-4 border border-card-border rounded-2xl cursor-pointer hover:border-accent-purple transition-colors bg-white">
+                            <div class="flex items-center gap-4">
+                                <div class="bg-purple-100 p-3 rounded-xl text-accent-purple">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold">Cambio de bombillo</h4>
+                                    <p class="text-sm text-gray-500">Materiales no incluidos</p>
+                                </div>
+                            </div>
+                            <span class="font-display font-bold text-xl tabular-nums">$15</span>
+                            <input type="radio" name="service" value="Cambio de bombillo" data-price="15" class="hidden">
+                        </label>
+                        
+                        <label class="flex items-center justify-between p-4 border-2 border-accent-purple rounded-2xl cursor-pointer bg-accent-purple-light/30">
+                            <div class="flex items-center gap-4">
+                                <div class="bg-purple-100 p-3 rounded-xl text-accent-purple">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold">Instalación de repisa</h4>
+                                    <p class="text-sm text-gray-500">Hasta 1 metro</p>
+                                </div>
+                            </div>
+                            <span class="font-display font-bold text-xl tabular-nums">$20</span>
+                            <input type="radio" name="service" value="Instalación de repisa" data-price="20" checked class="hidden">
+                        </label>
+
+                        <label class="flex items-center justify-between p-4 border border-card-border rounded-2xl cursor-pointer hover:border-accent-purple transition-colors bg-white">
+                            <div class="flex items-center gap-4">
+                                <div class="bg-purple-100 p-3 rounded-xl text-accent-purple">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold">Ajuste de grifo</h4>
+                                    <p class="text-sm text-gray-500">Empaques básicos</p>
+                                </div>
+                            </div>
+                            <span class="font-display font-bold text-xl tabular-nums">$25</span>
+                            <input type="radio" name="service" value="Ajuste de grifo" data-price="25" class="hidden">
+                        </label>
+                    </div>
+                </div>
+
+                <div class="bg-white p-8 rounded-3xl border border-card-border shadow-premium">
+                    <h3 class="font-display text-2xl font-bold mb-6">Selecciona Fecha y Hora</h3>
+                    
+                    <div class="grid grid-cols-7 gap-2 text-center mb-6">
+                        <div class="text-xs font-semibold text-gray-400">L</div>
+                        <div class="text-xs font-semibold text-gray-400">M</div>
+                        <div class="text-xs font-semibold text-gray-400">X</div>
+                        <div class="text-xs font-semibold text-gray-400">J</div>
+                        <div class="text-xs font-semibold text-gray-400">V</div>
+                        <div class="text-xs font-semibold text-gray-400">S</div>
+                        <div class="text-xs font-semibold text-gray-400">D</div>
+                        
+                        <div class="p-2 text-gray-300">28</div><div class="p-2 text-gray-300">29</div><div class="p-2 text-gray-300">30</div>
+                        <div class="p-2">1</div><div class="p-2">2</div><div class="p-2">3</div><div class="p-2">4</div>
+                        <div class="p-2">5</div><div class="p-2 bg-accent-purple text-white rounded-lg font-bold shadow-md shadow-purple-500/40">6</div>
+                        <div class="p-2">7</div><div class="p-2">8</div><div class="p-2">9</div><div class="p-2">10</div><div class="p-2">11</div>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-3 mb-8" id="time-options">
+                        <button class="time-btn py-2 border border-card-border rounded-lg text-sm hover:border-accent-purple transition-colors" data-time="09:00 AM">09:00 AM</button>
+                        <button class="time-btn py-2 border-2 border-accent-purple bg-accent-purple-light/30 rounded-lg text-sm font-semibold text-accent-purple" data-time="11:30 AM">11:30 AM</button>
+                        <button class="time-btn py-2 border border-card-border rounded-lg text-sm hover:border-accent-purple transition-colors" data-time="02:00 PM">02:00 PM</button>
+                    </div>
+
+                    <button id="btn-confirm-service" class="w-full py-4 bg-on-primary text-white rounded-xl font-bold hover:bg-purple-900 transition-colors flex items-center justify-center gap-2">
+                        Confirmar y Pagar $<span id="display-price">20</span>
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION: ADMIN PANEL -->
+        <section id="admin" class="tab-content hidden">
+            <div class="mb-8 flex justify-between items-end">
+                <div>
+                    <h2 class="font-display text-4xl font-extrabold mb-2">Panel de Control</h2>
+                    <p class="text-gray-600">Visión general del negocio y gestión de servicios.</p>
+                </div>
+                <button class="bg-white border border-card-border px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                    Actualizar
+                </button>
+            </div>
+
+            <!-- Metrics -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+                <div class="bg-white p-6 rounded-2xl border border-card-border shadow-sm">
+                    <h4 class="text-gray-500 text-sm font-medium mb-2">Ingresos del Mes</h4>
+                    <div class="font-display text-3xl font-bold tabular-nums">$14,250</div>
+                    <p class="text-green-500 text-sm mt-2 flex items-center gap-1">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg>
+                        +12% vs mes anterior
+                    </p>
+                </div>
+                <div class="bg-white p-6 rounded-2xl border border-card-border shadow-sm">
+                    <h4 class="text-gray-500 text-sm font-medium mb-2">Suscripciones Activas</h4>
+                    <div class="font-display text-3xl font-bold tabular-nums">482</div>
+                    <p class="text-green-500 text-sm mt-2 flex items-center gap-1">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg>
+                        +5 nuevas hoy
+                    </p>
+                </div>
+                <div class="bg-white p-6 rounded-2xl border border-card-border shadow-sm">
+                    <h4 class="text-gray-500 text-sm font-medium mb-2">Citas Pendientes</h4>
+                    <div class="font-display text-3xl font-bold tabular-nums text-accent-orange" id="admin-pending-count">0</div>
+                    <p class="text-gray-500 text-sm mt-2">Para los próximos 7 días</p>
+                </div>
+            </div>
+
+            <!-- Appointments Table -->
+            <div class="bg-white rounded-3xl border border-card-border shadow-sm overflow-hidden">
+                <div class="px-6 py-5 border-b border-card-border flex justify-between items-center bg-gray-50">
+                    <h3 class="font-bold text-lg">Citas Agendadas Recientemente</h3>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="text-xs text-gray-400 uppercase tracking-wider border-b border-card-border">
+                                <th class="px-6 py-4 font-semibold">Cliente</th>
+                                <th class="px-6 py-4 font-semibold">Servicio</th>
+                                <th class="px-6 py-4 font-semibold">Fecha / Hora</th>
+                                <th class="px-6 py-4 font-semibold">Monto</th>
+                                <th class="px-6 py-4 font-semibold">Estado</th>
+                                <th class="px-6 py-4 font-semibold text-right">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-appointments-body" class="text-sm">
+                            <tr class="border-b border-gray-100 hover:bg-gray-50 text-gray-500 text-center" id="empty-state-row">
+                                <td colspan="6" class="px-6 py-8">No hay citas agendadas aún. Ve a "Pide un Técnico" para crear una.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION: BLOG / DIY -->
+        <section id="blog" class="tab-content hidden">
+            <div class="text-center mb-12">
+                <h2 class="font-display text-4xl font-extrabold mb-4">Academia del Hogar</h2>
+                <p class="text-lg text-gray-600 max-w-2xl mx-auto">Aprende a cuidar tu casa paso a paso. Guías visuales para los valientes que quieren hacerlo por sí mismos.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="bg-white rounded-3xl overflow-hidden border border-card-border shadow-sm hover:shadow-premium transition-shadow group flex flex-col">
+                    <div class="h-48 overflow-hidden relative">
+                        <img src="https://images.unsplash.com/photo-1584622650111-993a426fbf0a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Faucet repair" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                        <div class="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-accent-purple">Plomería</div>
+                    </div>
+                    <div class="p-6 flex-grow flex flex-col">
+                        <h3 class="font-display font-bold text-xl mb-3 leading-tight">Cómo arreglar una cisterna que pierde agua</h3>
+                        <p class="text-gray-500 text-sm mb-6 flex-grow">Guía de 3 pasos con video de 30s. Solo necesitas un destornillador y nuestra junta.</p>
+                        
+                        <div class="space-y-3 mt-auto">
+                            <button class="w-full py-2.5 bg-accent-orange-light text-orange-700 font-semibold rounded-lg hover:bg-orange-200 transition-colors text-sm flex items-center justify-center gap-2">
+                                <span>🛒</span> Comprar Kit DIY ($12)
+                            </button>
+                            <button class="w-full py-2.5 border border-card-border text-gray-600 font-semibold rounded-lg hover:bg-gray-50 transition-colors text-sm flex items-center justify-center gap-2">
+                                <span>🔧</span> Envíen un técnico
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fix: Replaced broken images with reliable Placehold.co images styled perfectly -->
+                <div class="bg-white rounded-3xl overflow-hidden border border-card-border shadow-sm hover:shadow-premium transition-shadow group flex flex-col">
+                    <div class="h-48 overflow-hidden relative bg-gray-100 flex items-center justify-center">
+                        <img src="https://placehold.co/800x600/f3f4f6/7c3aed?text=Sellar+Bañera" alt="Bathroom Caulk Placeholder" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                        <div class="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-accent-orange">Baños</div>
+                    </div>
+                    <div class="p-6 flex-grow flex flex-col">
+                        <h3 class="font-display font-bold text-xl mb-3 leading-tight">Sellar bañera con silicona y evitar humedades</h3>
+                        <p class="text-gray-500 text-sm mb-6 flex-grow">Aprende a retirar la silicona vieja y aplicar una nueva capa perfecta sin manchar.</p>
+                        
+                        <div class="space-y-3 mt-auto">
+                            <button class="w-full py-2.5 bg-accent-orange-light text-orange-700 font-semibold rounded-lg hover:bg-orange-200 transition-colors text-sm flex items-center justify-center gap-2">
+                                <span>🛒</span> Comprar Kit DIY ($8)
+                            </button>
+                            <button class="w-full py-2.5 border border-card-border text-gray-600 font-semibold rounded-lg hover:bg-gray-50 transition-colors text-sm flex items-center justify-center gap-2">
+                                <span>🔧</span> Envíen un técnico
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-3xl overflow-hidden border border-card-border shadow-sm hover:shadow-premium transition-shadow group flex flex-col">
+                    <div class="h-48 overflow-hidden relative">
+                        <img src="https://placehold.co/800x600/f3f4f6/7c3aed?text=Paredes+y+Yeso" alt="Wall repair" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                        <div class="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-accent-purple">Paredes</div>
+                    </div>
+                    <div class="p-6 flex-grow flex flex-col">
+                        <h3 class="font-display font-bold text-xl mb-3 leading-tight">Reparar agujeros en yeso o pared fácilmente</h3>
+                        <p class="text-gray-500 text-sm mb-6 flex-grow">Cubre marcas de cuadros antiguos con masilla y espátula en menos de 10 minutos.</p>
+                        
+                        <div class="space-y-3 mt-auto">
+                            <button class="w-full py-2.5 bg-accent-orange-light text-orange-700 font-semibold rounded-lg hover:bg-orange-200 transition-colors text-sm flex items-center justify-center gap-2">
+                                <span>🛒</span> Comprar Kit DIY ($15)
+                            </button>
+                            <button class="w-full py-2.5 border border-card-border text-gray-600 font-semibold rounded-lg hover:bg-gray-50 transition-colors text-sm flex items-center justify-center gap-2">
+                                <span>🔧</span> Envíen un técnico
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+    </main>
+
+    <!-- Chatbot Widget -->
+    <div id="chatbot-container" class="fixed bottom-6 right-6 z-40 flex flex-col items-end">
+        <div id="chat-window" class="hidden mb-4 w-80 bg-white rounded-2xl shadow-premium border border-card-border overflow-hidden flex flex-col h-[400px]">
+            <div class="bg-on-primary text-white p-4 flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                    <div class="w-2 h-2 bg-green-400 rounded-full"></div>
+                    <h4 class="font-bold font-display">FixBot</h4>
+                </div>
+                <button id="close-chat" class="text-gray-300 hover:text-white">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <div id="chat-messages" class="flex-grow p-4 overflow-y-auto flex flex-col gap-3 bg-gray-50">
+                <div class="chat-bubble-received bg-white border border-gray-100 shadow-sm p-3 rounded-2xl rounded-tl-none text-sm text-gray-700 max-w-[85%]">
+                    ¡Hola! Soy FixBot 🤖. ¿En qué te puedo ayudar hoy con tu hogar?
+                </div>
+            </div>
+            <div class="p-3 bg-white border-t border-gray-100 flex gap-2">
+                <input type="text" id="chat-input" placeholder="Escribe un mensaje..." class="flex-grow bg-gray-50 border border-gray-200 rounded-full px-4 py-2 text-sm focus:outline-none focus:border-accent-purple focus:ring-1 focus:ring-accent-purple">
+                <button id="send-chat" class="bg-accent-purple text-white p-2 rounded-full hover:bg-purple-700 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+                </button>
+            </div>
+        </div>
+
+        <button id="chat-toggle" class="w-14 h-14 bg-accent-purple text-white rounded-full shadow-lg hover:shadow-premium hover:-translate-y-1 transition-all flex items-center justify-center">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
+        </button>
+    </div>
+
+    <!-- Name Modal (Appears after Google Sign In) -->
+    <div id="name-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm hidden">
+        <div class="bg-white p-8 rounded-3xl shadow-premium max-w-md w-full mx-4 transform transition-all">
+            <h3 class="font-display text-2xl font-bold mb-2">¡Bienvenido a FixHero!</h3>
+            <p class="text-gray-600 mb-6 text-sm">Autenticación exitosa con Google. Por favor, confirma el nombre con el que quieres que te llamemos.</p>
+            
+            <div class="mb-6">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Tu Nombre:</label>
+                <input type="text" id="display-name-input" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-accent-purple outline-none transition-shadow" placeholder="Ej. Juan Pérez">
+                <p class="text-xs text-gray-400 mt-2">Nota: Añade "123" al final de tu nombre si eres Administrador.</p>
+            </div>
+            
+            <button id="save-name-btn" class="w-full bg-accent-purple text-white py-3 rounded-xl font-bold hover:bg-purple-700 transition-colors shadow-md">Continuar</button>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

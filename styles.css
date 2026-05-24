@@ -1,0 +1,41 @@
+/* Custom Styles not covered by Tailwind config */
+body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Ambient Motion Glows */
+@keyframes glow-drift {
+    0% { transform: translate(0, 0) scale(1); }
+    33% { transform: translate(30px, -50px) scale(1.1); }
+    66% { transform: translate(-20px, 20px) scale(0.9); }
+    100% { transform: translate(0, 0) scale(1); }
+}
+
+.glow-anim {
+    animation: glow-drift 15s ease-in-out infinite;
+}
+
+.glow-anim-delayed {
+    animation: glow-drift 18s ease-in-out infinite alternate-reverse;
+    animation-delay: 2s;
+}
+
+/* Nav button active states */
+.nav-btn {
+    color: #6b7280;
+}
+.nav-btn:hover {
+    color: #111827;
+}
+.nav-btn.active {
+    background-color: #ede9fe; /* accent-purple-light */
+    color: #7c3aed; /* accent-purple */
+    font-weight: 600;
+}
+
+/* Custom Checkbox/Radio Styles for On-Demand section */
+input[type="radio"]:checked + label {
+    border-color: #7c3aed;
+    background-color: rgba(237, 233, 254, 0.3); /* accent-purple-light with opacity */
+}
