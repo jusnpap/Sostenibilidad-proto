@@ -124,54 +124,85 @@
                 <p class="text-lg text-gray-600 max-w-2xl mx-auto">Evita desastres costosos. Una cuota mensual y nosotros nos encargamos de que tu hogar funcione a la perfección.</p>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                <!-- Plan Básico -->
                 <div class="bg-card-bg rounded-3xl p-8 border border-card-border shadow-sm hover:shadow-premium transition-shadow duration-300 relative overflow-hidden group">
                     <h3 class="font-display text-2xl font-bold mb-2">Plan Básico</h3>
                     <div class="flex items-baseline gap-1 mb-6">
-                        <span class="text-4xl font-extrabold tabular-nums">$60</span>
+                        <span class="text-4xl font-extrabold tabular-nums">$10</span>
                         <span class="text-gray-500">/mes</span>
                     </div>
                     <p class="text-gray-600 mb-8 h-12">Ideal para departamentos y hogares pequeños que necesitan tranquilidad.</p>
                     <ul class="space-y-4 mb-8">
                         <li class="flex items-start gap-3">
                             <svg class="w-5 h-5 text-accent-purple mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                            <span><strong class="font-semibold">2 visitas preventivas</strong> al año</span>
+                            <span><strong class="font-semibold">1 visita preventiva</strong> al mes</span>
                         </li>
                         <li class="flex items-start gap-3">
                             <svg class="w-5 h-5 text-accent-purple mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                            <span><strong class="font-semibold">2 micro-reparaciones</strong> al mes (max 1h)</span>
+                            <span><strong class="font-semibold">1 revisión / micro-reparación</strong> al mes</span>
                         </li>
                         <li class="flex items-start gap-3">
                             <svg class="w-5 h-5 text-accent-purple mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                            <span>Purgar radiadores, grifos, cuadros</span>
+                            <span>Soporte básico</span>
                         </li>
                     </ul>
                     <button class="w-full py-4 rounded-xl font-semibold bg-accent-purple-light text-accent-purple group-hover:bg-accent-purple group-hover:text-white transition-colors duration-300 btn-subscribe" data-plan="Básico">Suscribirse al Básico</button>
                 </div>
 
+                <!-- Plan Pro -->
                 <div class="bg-on-primary text-white rounded-3xl p-8 border border-on-primary shadow-premium relative overflow-hidden">
                     <div class="absolute top-0 right-0 bg-accent-orange text-white text-xs font-bold px-4 py-1 rounded-bl-xl">POPULAR</div>
-                    <h3 class="font-display text-2xl font-bold mb-2">Plan Familiar</h3>
+                    <h3 class="font-display text-2xl font-bold mb-2">Plan Pro</h3>
                     <div class="flex items-baseline gap-1 mb-6">
-                        <span class="text-4xl font-extrabold tabular-nums">$120</span>
+                        <span class="text-4xl font-extrabold tabular-nums">$20</span>
                         <span class="text-gray-400">/mes</span>
                     </div>
-                    <p class="text-gray-300 mb-8 h-12">Cobertura total para casas grandes y familias que no quieren preocuparse por nada.</p>
+                    <p class="text-gray-300 mb-8 h-12">Cobertura perfecta para casas familiares y necesidades completas.</p>
                     <ul class="space-y-4 mb-8">
                         <li class="flex items-start gap-3">
                             <svg class="w-5 h-5 text-accent-orange mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                            <span><strong class="font-semibold">4 visitas preventivas</strong> al año</span>
+                            <span><strong class="font-semibold">3 visitas preventivas</strong> al mes</span>
                         </li>
                         <li class="flex items-start gap-3">
                             <svg class="w-5 h-5 text-accent-orange mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                            <span><strong class="font-semibold">Micro-reparaciones ilimitadas</strong> (max 1h c/u)</span>
+                            <span><strong class="font-semibold">2 revisiones / reparaciones</strong></span>
                         </li>
                         <li class="flex items-start gap-3">
                             <svg class="w-5 h-5 text-accent-orange mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                            <span>Tarifas congeladas en mano de obra extra</span>
+                            <span>Asistente de IA (FixBot) 24/7</span>
                         </li>
                     </ul>
-                    <button class="w-full py-4 rounded-xl font-semibold bg-accent-orange text-white hover:bg-orange-600 transition-colors duration-300 shadow-lg shadow-orange-500/30 btn-subscribe" data-plan="Familiar">Suscribirse al Familiar</button>
+                    <button class="w-full py-4 rounded-xl font-semibold bg-accent-orange text-white hover:bg-orange-600 transition-colors duration-300 shadow-lg shadow-orange-500/30 btn-subscribe" data-plan="Pro">Suscribirse al Pro</button>
+                </div>
+
+                <!-- Plan Hero -->
+                <div class="bg-card-bg rounded-3xl p-8 border border-card-border shadow-sm hover:shadow-premium transition-shadow duration-300 relative overflow-hidden group">
+                    <h3 class="font-display text-2xl font-bold mb-2">Plan Hero</h3>
+                    <div class="flex items-baseline gap-1 mb-6">
+                        <span class="text-4xl font-extrabold tabular-nums">$25</span>
+                        <span class="text-gray-500">/mes</span>
+                    </div>
+                    <p class="text-gray-600 mb-8 h-12">Cobertura total, premium y equipamiento garantizado.</p>
+                    <ul class="space-y-4 mb-8">
+                        <li class="flex items-start gap-3">
+                            <svg class="w-5 h-5 text-accent-purple mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            <span><strong class="font-semibold">4 visitas preventivas</strong> al mes</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <svg class="w-5 h-5 text-accent-purple mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            <span><strong class="font-semibold">4 revisiones / reparaciones</strong></span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <svg class="w-5 h-5 text-accent-purple mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            <span>Asistente de IA (FixBot) 24/7</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <svg class="w-5 h-5 text-accent-purple mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            <span>Kit básico de reparaciones incluido</span>
+                        </li>
+                    </ul>
+                    <button class="w-full py-4 rounded-xl font-semibold bg-accent-purple-light text-accent-purple group-hover:bg-accent-purple group-hover:text-white transition-colors duration-300 btn-subscribe" data-plan="Hero">Suscribirse al Hero</button>
                 </div>
             </div>
         </section>
