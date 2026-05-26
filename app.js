@@ -312,15 +312,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function botReply(userMsg) {
-        let reply = "Lo siento, no entiendo. ¿Podrías ser más específico? Puedo ayudarte a publicar una solicitud o darte info de la comunidad.";
+        let reply = "Lo siento, no entiendo bien. Intenta decir: 'quiero publicar una tarea', 'ver membresías' o 'quiero aprender'.";
         let msgLower = userMsg.toLowerCase();
 
-        if (msgLower.includes("precio") || msgLower.includes("cuanto") || msgLower.includes("membresia")) {
-            reply = "La membresía Básico cuesta $99/mes (ideal estudiantes) y el Foráneo Pro $199/mes (para roomies). ¡Ambos incluyen visitas preventivas!";
-        } else if (msgLower.includes("ayudante") || msgLower.includes("solicitud") || msgLower.includes("servicio")) {
-            reply = "¡Claro! Ve a la pestaña 'Publicar Solicitud' arriba, selecciona lo que necesitas y elige la hora.";
-        } else if (msgLower.includes("hola") || msgLower.includes("saludos")) {
-            reply = `¡Hola ${currentUserName !== "Usuario de Prueba" ? currentUserName : ""}! ¿Buscas ayuda o quieres ser ayudante?`;
+        if (msgLower.includes("precio") || msgLower.includes("cuanto") || msgLower.includes("membresia") || msgLower.includes("suscripcion")) {
+            reply = "La membresía Básica cuesta $99/mes (ideal estudiantes) y el Foráneo Pro $199/mes (para roomies). Puedes verlas en la pestaña 'Membresías'.";
+        } else if (msgLower.includes("ayudante") || msgLower.includes("solicitud") || msgLower.includes("servicio") || msgLower.includes("tarea")) {
+            reply = "¡Claro! Ve a la pestaña 'Publicar Solicitud' en el menú, cuéntanos qué necesitas y enviaremos tu solicitud a los ayudantes cercanos.";
+        } else if (msgLower.includes("hola") || msgLower.includes("saludos") || msgLower.includes("buenas")) {
+            reply = `¡Hola ${currentUserName !== "Usuario de Prueba" ? currentUserName : ""}! 👋 Soy AyudanteBot. ¿En qué te puedo apoyar hoy?`;
+        } else if (msgLower.includes("aprender") || msgLower.includes("curso") || msgLower.includes("leer") || msgLower.includes("comunidad")) {
+            reply = "¡Genial! Tenemos minicursos y artículos en la sección de 'Comunidad'. Ve allá para empezar a aprender y volverte un ayudante.";
+        } else if (msgLower.includes("gratis") || msgLower.includes("pagar")) {
+            reply = "Publicar una solicitud es gratis. Solo le pagas al ayudante cuando aceptas su oferta y completa el trabajo.";
         }
 
         setTimeout(() => {
@@ -340,6 +344,34 @@ document.addEventListener('DOMContentLoaded', () => {
     sendChat.addEventListener('click', handleSend);
     chatInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') handleSend();
+    });
+
+    // --- SUBSCRIPTIONS LOGIC ---
+    const subscribeButtons = document.querySelectorAll('.btn-subscribe');
+    subscribeButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const plan = btn.getAttribute('data-plan');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '¡Suscrito! ✓';
+            
+            setTimeout(() => {
+                alert(`¡Felicidades ${currentUserName}! Te has suscrito exitosamente a la membresía ${plan}. Te enviaremos los detalles por correo.`);
+                btn.innerHTML = originalText;
+            }, 600);
+        });
+    });
+
+    // --- COMMUNITY / COURSES LOGIC ---
+    const courseButtons = document.querySelectorAll('.btn-course');
+    courseButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const originalText = btn.innerHTML;
+            btn.innerHTML = 'Cargando...';
+            setTimeout(() => {
+                btn.innerHTML = originalText;
+                alert('¡Abriendo el contenido de la academia! Preparando lección en una nueva ventana...');
+            }, 600);
+        });
     });
 
 });
