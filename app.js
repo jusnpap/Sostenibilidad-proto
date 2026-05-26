@@ -270,8 +270,8 @@ document.addEventListener('DOMContentLoaded', () => {
             btnConfirmService.classList.replace('bg-green-500', 'bg-accent-green');
             
             // Redirect to WhatsApp
-            const message = \`Hola, necesito ayuda con: \${selectedService}. Lo necesito para: \${selectedTime}. Mi nombre es: \${currentUserName}\`;
-            window.open(\`https://wa.me/593998045232?text=\${encodeURIComponent(message)}\`, '_blank');
+            const message = `Hola, necesito ayuda con: ${selectedService}. Lo necesito para: ${selectedTime}. Mi nombre es: ${currentUserName}`;
+            window.open(`https://wa.me/593998045232?text=${encodeURIComponent(message)}`, '_blank');
         }, 1500);
     });
 
@@ -373,8 +373,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const title = card ? card.querySelector('h3').textContent : 'Artículo';
                 
                 articleTitle.textContent = title;
-                articleContent.innerHTML = \`
-                    <p class="text-lg font-medium text-gray-800">Bienvenido al contenido: <strong>\${title}</strong>.</p>
+                articleContent.innerHTML = `
+                    <p class="text-lg font-medium text-gray-800">Bienvenido al contenido: <strong>${title}</strong>.</p>
                     <p>Aquí encontrarás toda la información necesaria para aprender y aplicar estas habilidades como ayudante.</p>
                     <h4 class="font-bold text-lg text-on-primary mt-6 border-b pb-2">Paso 1: Preparación</h4>
                     <p class="mt-2">Asegúrate de tener todas las herramientas necesarias antes de comenzar. La seguridad es lo primero que debes tener en cuenta al realizar cualquier tarea del hogar. Siempre usa equipo de protección si es necesario (guantes, gafas de seguridad).</p>
@@ -382,7 +382,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <p class="mt-2">Sigue las instrucciones paso a paso. Si tienes dudas durante el proceso, siempre es mejor detenerte y consultar a la comunidad o buscar tutoriales específicos en video. Nunca asumas un riesgo innecesario, especialmente con electricidad o plomería compleja.</p>
                     <h4 class="font-bold text-lg text-on-primary mt-6 border-b pb-2">Paso 3: Verificación</h4>
                     <p class="mt-2">Revisa que todo haya quedado perfectamente funcional y limpio. Una buena impresión final asegurará una calificación de 5 estrellas por parte de tu cliente, lo que te ayudará a conseguir más solicitudes en el futuro.</p>
-                \`;
+                `;
                 
                 articleModal.classList.remove('hidden');
                 if (typeof gsap !== 'undefined') {
