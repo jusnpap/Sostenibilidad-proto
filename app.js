@@ -200,6 +200,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const adminTbody = document.getElementById('admin-appointments-body');
     const emptyStateRow = document.getElementById('empty-state-row');
     const pendingCount = document.getElementById('admin-pending-count');
+    
+    // URL de tu nuevo backend en Cloudflare. ¡Asegúrate de cambiar esto si le pones otro nombre al worker!
+    const API_BASE_URL = "https://backend-ayudante.juanpablonarvaezyar2016.workers.dev";
+
+    async function loadAppointments() {
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/appointments`);
+            if (response.ok) {
+                appointments = await response.json();
+                renderAdminTable();
+            }
+        } catch (error) {
+            console.error("Error cargando citas de la BD:", error);
+        }
+    }
 
     function renderAdminTable() {
         if (appointments.length === 0) {
@@ -238,32 +253,57 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         document.querySelectorAll('.complete-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
+            btn.addEventListener('click', async (e) => {
                 const idx = e.target.getAttribute('data-index');
-                appointments[idx].status = 'Completado';
-                renderAdminTable();
+                
+                // Actualizar en el Backend (BD)
+                const originalText = e.target.innerHTML;
+                e.target.innerHTML = '...';
+                try {
+                    await fetch(`${API_BASE_URL}/api/appointments/complete`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ index: parseInt(idx) })
+                    });
+                    appointments[idx].status = 'Completado';
+                    renderAdminTable();
+                } catch (err) {
+                    console.error("Error al completar cita:", err);
+                    e.target.innerHTML = originalText;
+                }
             });
         });
 
         const pending = appointments.filter(a => a.status === 'Pendiente').length;
         pendingCount.textContent = pending;
     }
+    
+    // Cargar los registros desde la base de datos al iniciar la página
+    loadAppointments();
 
     // Schedule new appointment
     btnConfirmService.addEventListener('click', () => {
         const originalText = btnConfirmService.innerHTML;
         btnConfirmService.innerHTML = '¡Abriendo WhatsApp...! <svg class="w-5 h-5 ml-2 inline-block" fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 0C5.385 0 0 5.385 0 12.031c0 2.115.548 4.184 1.594 6.002L.003 24l6.113-1.604A11.967 11.967 0 0012.031 24c6.646 0 12.03-5.385 12.03-12.031C24.062 5.385 18.677 0 12.031 0zm0 22.016a9.967 9.967 0 01-5.07-1.385l-.364-.216-3.771.989.998-3.676-.236-.376A9.97 9.97 0 012.046 12.03C2.046 6.52 6.521 2.045 12.03 2.045c5.51 0 9.986 4.475 9.986 9.985s-4.476 9.986-9.985 9.986zm5.48-7.487c-.301-.151-1.782-.879-2.059-.979-.277-.101-.479-.151-.679.151-.201.302-.782.979-.958 1.18-.176.201-.353.226-.654.075-1.704-.849-2.92-1.92-4.041-3.834-.201-.341-.021-.527.129-.678.136-.136.301-.352.451-.527.151-.176.201-.301.301-.502.101-.201.05-.377-.025-.527-.075-.151-.679-1.636-.931-2.241-.244-.585-.493-.505-.679-.514-.176-.009-.377-.01-.578-.01-.201 0-.528.076-.804.377-.276.302-1.055 1.031-1.055 2.513 0 1.482 1.08 2.915 1.231 3.116.151.201 2.124 3.242 5.143 4.544.718.309 1.278.494 1.716.632.72.228 1.376.196 1.895.118.582-.087 1.782-.729 2.033-1.433.251-.704.251-1.307.176-1.433-.075-.126-.276-.201-.578-.352z"></path></svg>';
         btnConfirmService.classList.replace('bg-accent-green', 'bg-green-500'); // Note: it used bg-accent-green originally, need to double check
-        
-        appointments.unshift({
+        const newAppointment = {
             clientName: currentUserName,
             service: selectedService,
             price: selectedPrice,
             time: selectedTime,
             status: 'Pendiente'
-        });
+        };
         
+        // Optimistic UI update
+        appointments.unshift(newAppointment);
         renderAdminTable();
+
+        // Guardar en la Base de Datos (Cloudflare)
+        fetch(`${API_BASE_URL}/api/appointments`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(newAppointment)
+        }).catch(err => console.error("Error guardando en BD:", err));
 
         setTimeout(() => {
             btnConfirmService.innerHTML = originalText;
