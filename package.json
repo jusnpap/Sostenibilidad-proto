@@ -2,9 +2,11 @@
   "name": "sostenibilidad",
   "version": "1.0.0",
   "scripts": {
-    "dev": "wrangler dev --port 3000"
+    "build:css": "npx tailwindcss@3 -i ./public/input.css -o ./public/styles.css --minify",
+    "dev": "npm run build:css && wrangler dev --port 3000"
   },
   "devDependencies": {
+    "tailwindcss": "^4.3.0",
     "wrangler": "^3.0.0"
   }
 }
