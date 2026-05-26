@@ -202,7 +202,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const pendingCount = document.getElementById('admin-pending-count');
     
     // URL de tu nuevo backend en Cloudflare. ¡Asegúrate de cambiar esto si le pones otro nombre al worker!
-    const API_BASE_URL = "https://backend-ayudante.juanpablonarvaezyar2016.workers.dev";
+    // URL de tu backend (vacío porque ahora corre en el mismo dominio)
+    const API_BASE_URL = "";
 
     async function loadAppointments() {
         try {
