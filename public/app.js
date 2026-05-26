@@ -35,6 +35,8 @@ window.onload = function () {
 
 document.addEventListener('DOMContentLoaded', () => {
     
+    const API_BASE_URL = "";
+
     // --- GSAP SAFE WRAPPER ---
     let gsapAvailable = false;
     try {
@@ -121,11 +123,251 @@ document.addEventListener('DOMContentLoaded', () => {
     const userProfileContainer = document.getElementById('user-profile-container');
     const userNameDisplay = document.getElementById('user-name-display');
     const navAdminBtn = document.getElementById('nav-admin-btn');
+    const navSolicitudesBtn = document.getElementById('nav-solicitudes-btn');
+    const navHelperBtn = document.getElementById('nav-helper-btn');
+    const roleOptions = document.querySelectorAll('.role-option');
     
     let isUserAdmin = false;
     let currentUserName = "Usuario de Prueba";
+    let userRole = "cliente";
+    let helperProfile = null;
+    let pendingRatingApptId = null;
+    let selectedRating = 0;
 
-    saveNameBtn.addEventListener('click', () => {
+    roleOptions.forEach(option => {
+        option.addEventListener('click', () => {
+            roleOptions.forEach(o => {
+                o.classList.remove('border-2', 'border-accent-green', 'bg-accent-green-light/30');
+                o.classList.add('border', 'border-card-border');
+            });
+            option.classList.remove('border', 'border-card-border');
+            option.classList.add('border-2', 'border-accent-green', 'bg-accent-green-light/30');
+            option.querySelector('input').checked = true;
+        });
+    });
+
+    function updateNavForRole() {
+        if (userRole === 'ayudante') {
+            navSolicitudesBtn.classList.remove('hidden');
+            navHelperBtn.classList.remove('hidden');
+        } else {
+            navSolicitudesBtn.classList.add('hidden');
+            navHelperBtn.classList.add('hidden');
+        }
+    }
+
+    async function saveHelperProfile(skills, bio) {
+        const response = await fetch(`${API_BASE_URL}/api/helpers`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: currentUserName, skills, bio })
+        });
+        if (response.ok) {
+            const data = await response.json();
+            helperProfile = data.helper;
+        }
+    }
+
+    async function loadHelperProfile() {
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/helpers?name=${encodeURIComponent(currentUserName)}`);
+            if (response.ok) {
+                helperProfile = await response.json();
+                if (helperProfile) renderHelperProfile();
+            }
+        } catch (e) {
+            console.error("Error cargando perfil ayudante:", e);
+        }
+    }
+
+    function renderHelperProfile() {
+        if (!helperProfile) return;
+        document.getElementById('helper-profile-name').textContent = helperProfile.name;
+        document.getElementById('helper-avatar').textContent = helperProfile.name.charAt(0).toUpperCase();
+        document.getElementById('helper-bio').value = helperProfile.bio || '';
+        document.getElementById('helper-jobs-count').textContent = helperProfile.completedJobs || 0;
+
+        const avg = helperProfile.ratingCount > 0
+            ? (helperProfile.ratingSum / helperProfile.ratingCount).toFixed(1)
+            : null;
+        document.getElementById('helper-rating-display').textContent = avg
+            ? `${avg} (${helperProfile.ratingCount} reseñas)`
+            : 'Sin calificaciones';
+
+        document.querySelectorAll('.helper-skill-check').forEach(cb => {
+            cb.checked = (helperProfile.skills || []).includes(cb.value);
+        });
+
+        renderHelperJobs();
+    }
+
+    function renderHelperJobs() {
+        const container = document.getElementById('helper-jobs-list');
+        const myJobs = appointments.filter(a => a.helperName === currentUserName && a.status !== 'Pendiente');
+
+        if (myJobs.length === 0) {
+            container.innerHTML = '<p class="text-gray-500 text-sm text-center py-4">Aún no tienes trabajos asignados.</p>';
+            return;
+        }
+
+        container.innerHTML = myJobs.map(appt => {
+            const statusClass = appt.status === 'Completado'
+                ? 'bg-green-100 text-green-700'
+                : 'bg-blue-100 text-blue-700';
+            const completeBtn = appt.status === 'Asignado'
+                ? `<button class="helper-complete-btn text-accent-green hover:underline text-sm font-semibold" data-id="${appt.id}">Marcar completado</button>`
+                : '';
+            return `
+                <div class="p-4 border border-card-border rounded-xl">
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            <h4 class="font-bold">${escapeHtml(appt.service)}</h4>
+                            <p class="text-sm text-gray-500">Cliente: ${escapeHtml(appt.clientName)} · ${escapeHtml(appt.time)}</p>
+                        </div>
+                        <span class="px-2 py-1 ${statusClass} rounded-lg text-xs font-semibold">${appt.status}</span>
+                    </div>
+                    ${appt.description ? `<p class="text-sm text-gray-600 mb-2">${escapeHtml(appt.description)}</p>` : ''}
+                    <div class="text-right">${completeBtn}</div>
+                </div>`;
+        }).join('');
+
+        container.querySelectorAll('.helper-complete-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const id = btn.getAttribute('data-id');
+                btn.textContent = '...';
+                try {
+                    await fetch(`${API_BASE_URL}/api/appointments/complete`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ id })
+                    });
+                    await loadAppointments();
+                    await loadHelperProfile();
+                } catch (e) {
+                    btn.textContent = 'Marcar completado';
+                }
+            });
+        });
+    }
+
+    function renderSolicitudes() {
+        const container = document.getElementById('solicitudes-list');
+        const empty = document.getElementById('solicitudes-empty');
+        const skills = helperProfile?.skills || [];
+        const available = appointments.filter(a =>
+            a.status === 'Pendiente' && skills.includes(a.service)
+        );
+
+        container.querySelectorAll('.solicitud-card').forEach(el => el.remove());
+
+        if (available.length === 0) {
+            empty.classList.remove('hidden');
+            return;
+        }
+
+        empty.classList.add('hidden');
+        available.forEach(appt => {
+            const card = document.createElement('div');
+            card.className = 'solicitud-card bg-white p-6 rounded-2xl border border-card-border shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4';
+            card.innerHTML = `
+                <div>
+                    <h4 class="font-bold text-lg">${escapeHtml(appt.service)}</h4>
+                    <p class="text-sm text-gray-500">Cliente: ${escapeHtml(appt.clientName)} · ${escapeHtml(appt.time)}</p>
+                    ${appt.description ? `<p class="text-sm text-gray-600 mt-2">${escapeHtml(appt.description)}</p>` : ''}
+                    <p class="font-display font-bold text-accent-green mt-2">~ $${escapeHtml(String(appt.price))}</p>
+                </div>
+                <button class="accept-btn px-6 py-3 bg-accent-green text-white rounded-xl font-bold hover:bg-green-700 transition-colors whitespace-nowrap" data-id="${appt.id}">Aceptar</button>`;
+            container.appendChild(card);
+
+            card.querySelector('.accept-btn').addEventListener('click', async (e) => {
+                const btn = e.target;
+                btn.textContent = '...';
+                btn.disabled = true;
+                try {
+                    await fetch(`${API_BASE_URL}/api/appointments/accept`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ id: appt.id, helperName: currentUserName })
+                    });
+                    await loadAppointments();
+                } catch (err) {
+                    btn.textContent = 'Aceptar';
+                    btn.disabled = false;
+                }
+            });
+        });
+    }
+
+    function renderMyRequests() {
+        const section = document.getElementById('my-requests-section');
+        const list = document.getElementById('my-requests-list');
+        const mine = appointments.filter(a => a.clientName === currentUserName);
+
+        if (userRole !== 'cliente' || mine.length === 0) {
+            section.classList.add('hidden');
+            return;
+        }
+
+        section.classList.remove('hidden');
+        list.innerHTML = mine.map(appt => {
+            let statusBadge = '';
+            if (appt.status === 'Pendiente') statusBadge = '<span class="text-orange-600 font-semibold">Esperando ayudante</span>';
+            else if (appt.status === 'Asignado') statusBadge = `<span class="text-blue-600 font-semibold">Asignado a ${escapeHtml(appt.helperName)}</span>`;
+            else if (appt.status === 'Completado' && !appt.rating) statusBadge = '<span class="text-green-600 font-semibold">Completado — califica abajo</span>';
+            else if (appt.rating) statusBadge = `<span class="text-green-600 font-semibold">Completado · ${appt.rating}★</span>`;
+
+            const rateBtn = (appt.status === 'Completado' && !appt.rating)
+                ? `<button class="rate-btn mt-2 text-sm text-accent-green font-semibold hover:underline" data-id="${appt.id}" data-helper="${escapeHtml(appt.helperName || '')}">Calificar ayudante</button>`
+                : '';
+
+            return `
+                <div class="p-4 bg-gray-50 rounded-xl border border-card-border">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h4 class="font-bold">${escapeHtml(appt.service)}</h4>
+                            <p class="text-sm text-gray-500">${escapeHtml(appt.time)} · $${escapeHtml(String(appt.price))}</p>
+                        </div>
+                        <div class="text-sm text-right">${statusBadge}</div>
+                    </div>
+                    ${rateBtn}
+                </div>`;
+        }).join('');
+
+        list.querySelectorAll('.rate-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                openRatingModal(btn.getAttribute('data-id'), btn.getAttribute('data-helper'));
+            });
+        });
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text || '';
+        return div.innerHTML;
+    }
+
+    function openRatingModal(apptId, helperName) {
+        pendingRatingApptId = apptId;
+        selectedRating = 0;
+        document.getElementById('rating-modal-subtitle').textContent =
+            helperName ? `Califica a ${helperName}` : 'Califica a tu ayudante';
+        document.getElementById('rating-modal').classList.remove('hidden');
+        document.querySelectorAll('.rating-star').forEach(s => {
+            s.classList.remove('text-yellow-400');
+            s.classList.add('text-gray-300');
+        });
+        document.getElementById('submit-rating-btn').disabled = true;
+    }
+
+    function checkPendingRatings() {
+        if (userRole !== 'cliente') return;
+        const toRate = appointments.find(a =>
+            a.clientName === currentUserName && a.status === 'Completado' && !a.rating
+        );
+        if (toRate) openRatingModal(toRate.id, toRate.helperName);
+    }
+
+    saveNameBtn.addEventListener('click', async () => {
         let enteredName = nameInput.value.trim();
         if (!enteredName) enteredName = "Usuario Nuevo";
 
@@ -142,6 +384,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         currentUserName = enteredName;
+        userRole = document.querySelector('input[name="user-role"]:checked').value;
+        updateNavForRole();
+
+        if (userRole === 'ayudante') {
+            await saveHelperProfile(['Montaje'], '');
+            await loadHelperProfile();
+        }
 
         // Hide Modal
         nameModal.classList.add('hidden');
@@ -187,10 +436,11 @@ document.addEventListener('DOMContentLoaded', () => {
                             targetTab.classList.remove('hidden');
                             targetTab.classList.add('block');
                             
-                            // RESET the target tab's own inline styles
                             gsap.set(targetTab, { opacity: 1, y: 0 });
                             
-                            // Animating the direct descendants of the tab content to give a stagger effect
+                            if (targetId === 'solicitudes') renderSolicitudes();
+                            if (targetId === 'helper-profile') loadHelperProfile();
+                            
                             const childrenToAnimate = targetTab.querySelectorAll(':scope > div > *');
                             gsap.fromTo(childrenToAnimate.length > 0 ? childrenToAnimate : targetTab.children,
                                 { opacity: 0, y: 30, scale: 0.98 },
@@ -208,6 +458,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 targetTab.classList.remove('hidden');
                 targetTab.classList.add('block');
+                if (targetId === 'solicitudes') renderSolicitudes();
+                if (targetId === 'helper-profile') loadHelperProfile();
             }
         });
     });
@@ -267,16 +519,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const emptyStateRow = document.getElementById('empty-state-row');
     const pendingCount = document.getElementById('admin-pending-count');
     
-    // URL de tu nuevo backend en Cloudflare. ¡Asegúrate de cambiar esto si le pones otro nombre al worker!
-    // URL de tu backend (vacío porque ahora corre en el mismo dominio)
-    const API_BASE_URL = "";
-
     async function loadAppointments() {
         try {
             const response = await fetch(`${API_BASE_URL}/api/appointments`);
             if (response.ok) {
                 appointments = await response.json();
                 renderAdminTable();
+                renderMyRequests();
+                if (userRole === 'ayudante') {
+                    renderSolicitudes();
+                    renderHelperJobs();
+                }
+                checkPendingRatings();
             }
         } catch (error) {
             console.error("Error cargando citas de la BD:", error);
@@ -302,18 +556,21 @@ document.addEventListener('DOMContentLoaded', () => {
             let statusBadge = '';
             if (appt.status === 'Pendiente') {
                 statusBadge = '<span class="px-2 py-1 bg-orange-100 text-orange-700 rounded-lg text-xs font-semibold">Pendiente</span>';
+            } else if (appt.status === 'Asignado') {
+                statusBadge = `<span class="px-2 py-1 bg-blue-100 text-blue-700 rounded-lg text-xs font-semibold">Asignado${appt.helperName ? ' · ' + escapeHtml(appt.helperName) : ''}</span>`;
             } else {
-                statusBadge = '<span class="px-2 py-1 bg-green-100 text-green-700 rounded-lg text-xs font-semibold">Completado</span>';
+                const ratingText = appt.rating ? ` · ${appt.rating}★` : '';
+                statusBadge = `<span class="px-2 py-1 bg-green-100 text-green-700 rounded-lg text-xs font-semibold">Completado${ratingText}</span>`;
             }
 
             tr.innerHTML = `
-                <td class="px-6 py-4 font-medium text-gray-900">${appt.clientName}</td>
-                <td class="px-6 py-4">${appt.service}</td>
-                <td class="px-6 py-4">Hoy a las ${appt.time}</td>
-                <td class="px-6 py-4 font-semibold">$${appt.price}</td>
+                <td class="px-6 py-4 font-medium text-gray-900">${escapeHtml(appt.clientName)}</td>
+                <td class="px-6 py-4">${escapeHtml(appt.service)}</td>
+                <td class="px-6 py-4">Hoy a las ${escapeHtml(appt.time)}</td>
+                <td class="px-6 py-4 font-semibold">$${escapeHtml(String(appt.price))}</td>
                 <td class="px-6 py-4">${statusBadge}</td>
                 <td class="px-6 py-4 text-right">
-                    ${appt.status === 'Pendiente' ? `<button class="text-accent-green hover:underline text-sm complete-btn" data-index="${index}">Completar</button>` : `<span class="text-gray-400 text-sm">--</span>`}
+                    ${appt.status !== 'Completado' ? `<button class="text-accent-green hover:underline text-sm complete-btn" data-index="${index}">Completar</button>` : `<span class="text-gray-400 text-sm">--</span>`}
                 </td>
             `;
             adminTbody.appendChild(tr);
@@ -333,7 +590,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         body: JSON.stringify({ index: parseInt(idx) })
                     });
                     appointments[idx].status = 'Completado';
-                    renderAdminTable();
+                    await loadAppointments();
                 } catch (err) {
                     console.error("Error al completar cita:", err);
                     e.target.innerHTML = originalText;
@@ -357,24 +614,21 @@ document.addEventListener('DOMContentLoaded', () => {
         const originalText = btnConfirmService.innerHTML;
         btnConfirmService.innerHTML = '¡Abriendo WhatsApp...! <svg class="w-5 h-5 ml-2 inline-block" fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 0C5.385 0 0 5.385 0 12.031c0 2.115.548 4.184 1.594 6.002L.003 24l6.113-1.604A11.967 11.967 0 0012.031 24c6.646 0 12.03-5.385 12.03-12.031C24.062 5.385 18.677 0 12.031 0zm0 22.016a9.967 9.967 0 01-5.07-1.385l-.364-.216-3.771.989.998-3.676-.236-.376A9.97 9.97 0 012.046 12.03C2.046 6.52 6.521 2.045 12.03 2.045c5.51 0 9.986 4.475 9.986 9.985s-4.476 9.986-9.985 9.986zm5.48-7.487c-.301-.151-1.782-.879-2.059-.979-.277-.101-.479-.151-.679.151-.201.302-.782.979-.958 1.18-.176.201-.353.226-.654.075-1.704-.849-2.92-1.92-4.041-3.834-.201-.341-.021-.527.129-.678.136-.136.301-.352.451-.527.151-.176.201-.301.301-.502.101-.201.05-.377-.025-.527-.075-.151-.679-1.636-.931-2.241-.244-.585-.493-.505-.679-.514-.176-.009-.377-.01-.578-.01-.201 0-.528.076-.804.377-.276.302-1.055 1.031-1.055 2.513 0 1.482 1.08 2.915 1.231 3.116.151.201 2.124 3.242 5.143 4.544.718.309 1.278.494 1.716.632.72.228 1.376.196 1.895.118.582-.087 1.782-.729 2.033-1.433.251-.704.251-1.307.176-1.433-.075-.126-.276-.201-.578-.352z"></path></svg>';
         btnConfirmService.classList.replace('bg-accent-green', 'bg-green-500');
+        const taskDescription = document.getElementById('task-description')?.value.trim() || '';
         const newAppointment = {
             clientName: currentUserName,
             service: selectedService,
             price: selectedPrice,
             time: selectedTime,
+            description: taskDescription,
             status: 'Pendiente'
         };
         
-        // Optimistic UI update
-        appointments.unshift(newAppointment);
-        renderAdminTable();
-
-        // Guardar en la Base de Datos (Cloudflare)
         fetch(`${API_BASE_URL}/api/appointments`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(newAppointment)
-        }).catch(err => console.error("Error guardando en BD:", err));
+        }).then(() => loadAppointments()).catch(err => console.error("Error guardando en BD:", err));
 
         setTimeout(() => {
             btnConfirmService.innerHTML = originalText;
@@ -555,5 +809,47 @@ document.addEventListener('DOMContentLoaded', () => {
         closeArticleModal.addEventListener('click', hideArticleModal);
         finishArticleBtn.addEventListener('click', hideArticleModal);
     }
+
+    // --- HELPER PROFILE SAVE ---
+    document.getElementById('save-helper-profile-btn')?.addEventListener('click', async () => {
+        const skills = [...document.querySelectorAll('.helper-skill-check:checked')].map(cb => cb.value);
+        const bio = document.getElementById('helper-bio').value.trim();
+        if (skills.length === 0) {
+            alert('Selecciona al menos una habilidad.');
+            return;
+        }
+        await saveHelperProfile(skills, bio);
+        renderHelperProfile();
+        renderSolicitudes();
+        alert('Perfil guardado correctamente.');
+    });
+
+    // --- RATING MODAL ---
+    document.querySelectorAll('.rating-star').forEach(star => {
+        star.addEventListener('click', () => {
+            selectedRating = parseInt(star.getAttribute('data-value'));
+            document.querySelectorAll('.rating-star').forEach((s, i) => {
+                s.classList.toggle('text-yellow-400', i < selectedRating);
+                s.classList.toggle('text-gray-300', i >= selectedRating);
+            });
+            document.getElementById('submit-rating-btn').disabled = false;
+        });
+    });
+
+    document.getElementById('submit-rating-btn')?.addEventListener('click', async () => {
+        if (!pendingRatingApptId || !selectedRating) return;
+        try {
+            await fetch(`${API_BASE_URL}/api/appointments/rate`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: pendingRatingApptId, rating: selectedRating })
+            });
+            document.getElementById('rating-modal').classList.add('hidden');
+            pendingRatingApptId = null;
+            await loadAppointments();
+        } catch (e) {
+            console.error("Error al calificar:", e);
+        }
+    });
 
 });
