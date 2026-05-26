@@ -169,12 +169,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const input = label.querySelector('input[type="radio"]');
         input.addEventListener('change', () => {
             serviceLabels.forEach(l => {
-                l.classList.remove('border-2', 'border-accent-purple', 'bg-accent-purple-light/30');
+                l.classList.remove('border-2', 'border-accent-green', 'bg-accent-green-light/30');
                 l.classList.add('border', 'border-card-border', 'bg-white');
             });
             if (input.checked) {
                 label.classList.remove('border', 'border-card-border', 'bg-white');
-                label.classList.add('border-2', 'border-accent-purple', 'bg-accent-purple-light/30');
+                label.classList.add('border-2', 'border-accent-green', 'bg-accent-green-light/30');
                 selectedService = input.value;
                 selectedPrice = input.getAttribute('data-price');
                 displayPrice.textContent = selectedPrice;
@@ -186,11 +186,11 @@ document.addEventListener('DOMContentLoaded', () => {
     timeButtons.forEach(btn => {
         btn.addEventListener('click', () => {
             timeButtons.forEach(b => {
-                b.classList.remove('border-2', 'border-accent-purple', 'bg-accent-purple-light/30', 'text-accent-purple', 'font-semibold');
+                b.classList.remove('border-2', 'border-accent-green', 'bg-accent-green-light/30', 'text-accent-green', 'font-semibold');
                 b.classList.add('border', 'border-card-border');
             });
             btn.classList.remove('border', 'border-card-border');
-            btn.classList.add('border-2', 'border-accent-purple', 'bg-accent-purple-light/30', 'text-accent-purple', 'font-semibold');
+            btn.classList.add('border-2', 'border-accent-green', 'bg-accent-green-light/30', 'text-accent-green', 'font-semibold');
             selectedTime = btn.getAttribute('data-time');
         });
     });
@@ -231,7 +231,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td class="px-6 py-4 font-semibold">$${appt.price}</td>
                 <td class="px-6 py-4">${statusBadge}</td>
                 <td class="px-6 py-4 text-right">
-                    ${appt.status === 'Pendiente' ? `<button class="text-accent-purple hover:underline text-sm complete-btn" data-index="${index}">Completar</button>` : `<span class="text-gray-400 text-sm">--</span>`}
+                    ${appt.status === 'Pendiente' ? `<button class="text-accent-green hover:underline text-sm complete-btn" data-index="${index}">Completar</button>` : `<span class="text-gray-400 text-sm">--</span>`}
                 </td>
             `;
             adminTbody.appendChild(tr);
@@ -302,7 +302,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function addMessage(text, isUser = false) {
         const msgDiv = document.createElement('div');
         if (isUser) {
-            msgDiv.className = 'chat-bubble-sent bg-accent-purple text-white p-3 rounded-2xl rounded-tr-none text-sm self-end max-w-[85%] shadow-sm';
+            msgDiv.className = 'chat-bubble-sent bg-accent-green text-white p-3 rounded-2xl rounded-tr-none text-sm self-end max-w-[85%] shadow-sm';
         } else {
             msgDiv.className = 'chat-bubble-received bg-white border border-gray-100 shadow-sm p-3 rounded-2xl rounded-tl-none text-sm text-gray-700 self-start max-w-[85%]';
         }
@@ -312,15 +312,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function botReply(userMsg) {
-        let reply = "Lo siento, no entiendo. ¿Podrías ser más específico? Puedo ayudarte a agendar una reparación o darte info de suscripciones.";
+        let reply = "Lo siento, no entiendo. ¿Podrías ser más específico? Puedo ayudarte a publicar una solicitud o darte info de la comunidad.";
         let msgLower = userMsg.toLowerCase();
 
-        if (msgLower.includes("precio") || msgLower.includes("cuanto") || msgLower.includes("plan")) {
-            reply = "El Plan Básico cuesta $60/mes (ideal para depas) y el Plan Familiar $120/mes (cobertura total). ¡Ambos incluyen visitas preventivas!";
-        } else if (msgLower.includes("agendar") || msgLower.includes("tecnico") || msgLower.includes("reparacion")) {
-            reply = "¡Claro! Ve a la pestaña 'Pide un Técnico' en el menú de arriba, selecciona el servicio que necesitas y elige la hora.";
+        if (msgLower.includes("precio") || msgLower.includes("cuanto") || msgLower.includes("membresia")) {
+            reply = "La membresía Básico cuesta $99/mes (ideal estudiantes) y el Foráneo Pro $199/mes (para roomies). ¡Ambos incluyen visitas preventivas!";
+        } else if (msgLower.includes("ayudante") || msgLower.includes("solicitud") || msgLower.includes("servicio")) {
+            reply = "¡Claro! Ve a la pestaña 'Publicar Solicitud' arriba, selecciona lo que necesitas y elige la hora.";
         } else if (msgLower.includes("hola") || msgLower.includes("saludos")) {
-            reply = `¡Hola ${currentUserName !== "Usuario de Prueba" ? currentUserName : ""}! ¿En qué te ayudamos hoy?`;
+            reply = `¡Hola ${currentUserName !== "Usuario de Prueba" ? currentUserName : ""}! ¿Buscas ayuda o quieres ser ayudante?`;
         }
 
         setTimeout(() => {

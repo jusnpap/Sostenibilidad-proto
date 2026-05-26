@@ -26,16 +26,16 @@ body {
     color: #6b7280;
 }
 .nav-btn:hover {
-    color: #111827;
+    color: #0f172a;
 }
 .nav-btn.active {
-    background-color: #ede9fe; /* accent-purple-light */
-    color: #7c3aed; /* accent-purple */
+    background-color: #dcfce7; /* accent-green-light */
+    color: #16a34a; /* accent-green */
     font-weight: 600;
 }
 
 /* Custom Checkbox/Radio Styles for On-Demand section */
 input[type="radio"]:checked + label {
-    border-color: #7c3aed;
-    background-color: rgba(237, 233, 254, 0.3); /* accent-purple-light with opacity */
+    border-color: #16a34a;
+    background-color: rgba(220, 252, 231, 0.3); /* accent-green-light with opacity */
 }
