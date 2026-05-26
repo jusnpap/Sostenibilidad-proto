@@ -1,0 +1,11 @@
+{
+  "name": "backend-ayudante",
+  "main": "worker.js",
+  "compatibility_date": "2024-05-26",
+  "kv_namespaces": [
+    {
+      "binding": "API_DB",
+      "id": "bf6be9754c404700b1fa4a31f1e0a6a1"
+    }
+  ]
+}
