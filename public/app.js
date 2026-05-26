@@ -420,24 +420,60 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function botReply(userMsg) {
-        let reply = "Lo siento, no entiendo bien. Intenta decir: 'quiero publicar una tarea', 'ver membresías' o 'quiero aprender'.";
+        let reply = "Mmm, no estoy seguro de entenderte del todo. 🤔 Intenta decir cosas como: 'quiero agendar una cita', 'ver membresías', o 'se dañó mi baño'.";
         let msgLower = userMsg.toLowerCase();
 
-        if (msgLower.includes("precio") || msgLower.includes("cuanto") || msgLower.includes("membresia") || msgLower.includes("suscripcion")) {
-            reply = "La membresía Básica cuesta $10/mes (ideal estudiantes) y el Foráneo Pro $15/mes (para roomies). Puedes verlas en la pestaña 'Membresías'.";
-        } else if (msgLower.includes("ayudante") || msgLower.includes("solicitud") || msgLower.includes("servicio") || msgLower.includes("tarea")) {
-            reply = "¡Claro! Ve a la pestaña 'Publicar Solicitud' en el menú, cuéntanos qué necesitas y enviaremos tu solicitud a los ayudantes cercanos.";
-        } else if (msgLower.includes("hola") || msgLower.includes("saludos") || msgLower.includes("buenas")) {
-            reply = `¡Hola ${currentUserName !== "Usuario de Prueba" ? currentUserName : ""}! 👋 Soy AyudanteBot. ¿En qué te puedo apoyar hoy?`;
-        } else if (msgLower.includes("aprender") || msgLower.includes("curso") || msgLower.includes("leer") || msgLower.includes("comunidad")) {
-            reply = "¡Genial! Tenemos minicursos y artículos en la sección de 'Comunidad'. Ve allá para empezar a aprender y volverte un ayudante.";
-        } else if (msgLower.includes("gratis") || msgLower.includes("pagar")) {
-            reply = "Publicar una solicitud es gratis. Solo le pagas al ayudante cuando aceptas su oferta y completa el trabajo.";
+        // Saludos
+        if (msgLower.match(/(hola|saludos|buenas|q tal|que tal|buenos dias|buenas tardes)/)) {
+            const greetings = [
+                `¡Hola ${currentUserName !== "Usuario de Prueba" ? currentUserName : ""}! 👋 Soy AyudanteBot. ¿En qué te puedo apoyar hoy?`,
+                `¡Qué gusto saludarte! 😊 ¿Necesitas que te ayudemos con alguna reparación o tarea en casa?`,
+                `¡Hola! Aquí Ayudante Express listo para la acción. 🚀 ¿Qué se te ofrece?`
+            ];
+            reply = greetings[Math.floor(Math.random() * greetings.length)];
+        } 
+        // Baño / Plomería
+        else if (msgLower.match(/(baño|inodoro|ducha|agua|fuga|tubería|plomeria|fregadero)/)) {
+            reply = "¡Uy, problemas con el agua! 💧 Si es el baño, te recomiendo cerrar la llave de paso principal por seguridad para evitar inundaciones. Luego, ¡no te preocupes! Puedo ayudarte a agendar una cita con un plomero de nuestra comunidad. Solo ve a la pestaña 'Publicar Solicitud', selecciona 'Plomería Básica' y estarán ahí súper rápido.";
+        }
+        // Agendar / Cita / Necesito ayuda
+        else if (msgLower.match(/(agendar|cita|necesito ayuda|quiero un ayudante|reparar|arreglar|daño)/)) {
+            reply = "¡Claro que sí, para eso estamos! 🛠️ Agendar es súper fácil. Dirígete a la pestaña 'Publicar Solicitud' en el menú de arriba. Cuéntanos qué pasó, elige a qué hora lo necesitas, y enviaremos tu solicitud a los ayudantes cercanos. ¡En minutos tendrás ofertas en tu WhatsApp!";
+        }
+        // Electricidad
+        else if (msgLower.match(/(luz|electricidad|enchufe|foco|cortocircuito|chispa)/)) {
+            reply = "¡Con la electricidad hay que tener cuidado! ⚡ Te sugiero no tocar nada si ves chispas o cables expuestos. Baja el interruptor (breaker) de esa zona si puedes y ve a 'Publicar Solicitud' -> 'Electricidad' para enviarte a un experto de inmediato.";
+        }
+        // Membresías / Precios
+        else if (msgLower.match(/(precio|cuanto|cuesta|membresia|suscripcion|pagar|costo)/)) {
+            reply = "¡Nuestros precios están pensados para el bolsillo estudiantil! 💸 Publicar una tarea es gratis y tú eliges la oferta. Si prefieres algo constante, la membresía Básica cuesta $10/mes (visitas preventivas) y el plan Foráneo Pro $15/mes (para roomies). Revisa la pestaña 'Membresías' para ver todos los beneficios.";
+        }
+        // Comunidad / Aprender
+        else if (msgLower.match(/(aprender|curso|leer|comunidad|ser ayudante|trabajar)/)) {
+            reply = "¡Nos encanta esa actitud emprendedora! 🎓 Tenemos minicursos rápidos y gratuitos en la sección 'Comunidad'. Puedes aprender a arreglar una cisterna o cambiar un enchufe de forma segura. ¡Pásate por ahí, capacítate y empieza a generar ingresos ayudando a otros!";
         }
 
+        // Simular que el bot está escribiendo...
+        const typingDiv = document.createElement('div');
+        typingDiv.className = 'chat-bubble-received bg-white border border-gray-100 shadow-sm p-3 rounded-2xl rounded-tl-none text-sm text-gray-400 self-start max-w-[85%]';
+        typingDiv.id = 'typing-indicator';
+        typingDiv.innerHTML = '<span class="animate-pulse">Escribiendo...</span>';
+        chatMessages.appendChild(typingDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+
+        // Deshabilitar input mientras escribe
+        chatInput.disabled = true;
+
         setTimeout(() => {
+            // Remover "Escribiendo..." y habilitar input
+            const indicator = document.getElementById('typing-indicator');
+            if (indicator) indicator.remove();
+            chatInput.disabled = false;
+            chatInput.focus();
+            
+            // Agregar el mensaje real
             addMessage(reply, false);
-        }, 1000);
+        }, 1000 + Math.random() * 800); // 1 a 1.8 segundos de retraso
     }
 
     function handleSend() {
